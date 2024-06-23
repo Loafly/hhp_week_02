@@ -30,10 +30,14 @@ class LectureControllerTest {
         @Test
         fun `200 OK`() {
             // given
-            val id = 1L;
+            val userId = 1L;
+            val lectureId = 1L;
 
             // when then
-            mockMvc.perform(MockMvcRequestBuilders.get("/lectures/application/$id"))
+            mockMvc.perform(
+                MockMvcRequestBuilders.get("/lectures/application/$userId")
+                    .param("lectureId", lectureId.toString())
+            )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$").value(false))
         }
