@@ -28,7 +28,7 @@ class LectureControllerTest {
     inner class LectureApplicationGetTest {
 
         @Test
-        fun `200 OK`() {
+        fun `200 OK (특강 신청이 되어있지 않은 경우)`() {
             // given
             val userId = 1L;
             val lectureId = 1L;

@@ -3,13 +3,10 @@ package kr.com.hhp.lectureapiserver.lecture.domain
 import org.springframework.stereotype.Service
 
 @Service
-class LectureService {
-
-    fun getByLectureId(lectureId: Long) {
-
-    }
+class LectureService(private val lectureUserService: LectureUserService) {
 
     fun isLectureEnrolled(userId: Long, lectureId: Long): Boolean {
-        return false;
+        val lectureUser = lectureUserService.getNullAbleLectureUser(userId, lectureId)
+        return lectureUser != null;
     }
 }
