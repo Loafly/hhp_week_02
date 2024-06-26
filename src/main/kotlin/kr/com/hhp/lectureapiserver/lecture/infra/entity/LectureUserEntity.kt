@@ -1,4 +1,4 @@
-package kr.com.hhp.lectureapiserver.lecture.infra
+package kr.com.hhp.lectureapiserver.lecture.infra.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,13 +10,13 @@ import lombok.Getter
 
 @Getter
 @Entity
-@Table(name = "LectureUser")
+@Table(name = "lecture_user")
 class LectureUserEntity (
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lecture_user_id")
-    var lectureUserId: Long?,
+    var lectureUserId: Long? = null,
 
     @Column(name = "lecture_id")
     val lectureId: Long,
@@ -24,6 +24,7 @@ class LectureUserEntity (
     @Column(name = "user_id")
     val userId: Long
 ) {
+
     // 생성자
     constructor(lectureId: Long, userId: Long): this(
         lectureUserId = null, lectureId = lectureId, userId = userId
