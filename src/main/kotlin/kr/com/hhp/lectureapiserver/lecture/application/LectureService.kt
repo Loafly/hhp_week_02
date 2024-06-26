@@ -26,21 +26,26 @@ class LectureService(
     }
 
     fun apply(userId: Long, lectureId: Long) {
-        // TODO : 코드 수정이 필요 해 보이는데 어떻게 처리해야 잘한 코드일까??
-        var isEnrollmentSuccessful = true
-        try {
+
+        kotlin.runCatching {
             verifyApplyPreconditions(userId = userId, lectureId = lectureId)
+        }.onSuccess {
             lectureUserService.save(userId = userId, lectureId = lectureId)
-        } catch (e: RuntimeException) {
-            isEnrollmentSuccessful = false
-            throw e
-        } finally {
             lectureEnrollmentHistoryService.save(
                 userId = userId,
                 lectureId = lectureId,
-                isSuccessful = isEnrollmentSuccessful
+                isSuccessful = true
             )
+        }.onFailure { exception ->
+            lectureEnrollmentHistoryService.save(
+                userId = userId,
+                lectureId = lectureId,
+                isSuccessful = false
+            )
+
+            throw exception
         }
+
     }
 
     private fun verifyApplyPreconditions(userId: Long, lectureId: Long) {
@@ -57,16 +62,6 @@ class LectureService(
         if (lecture.capacity <= currentStudentCount) {
             throw CapacityExceededException("정원을 초과하였습니다.")
         }
-
-        if (lecture.enrollmentPeriodStart > LocalDateTime.now()) {
-            throw EarlyApplicationException("특강 신청 기간이 아닙니다.")
-        }
-
-        lecture.enrollmentPeriodEnd?.let {
-            if (it < LocalDateTime.now()) {
-                throw LateApplicationException("특강 신청 기간이 아닙니다.")
-            }
-        }
     }
 
     @Transactional(readOnly = true)
@@ -81,12 +76,9 @@ class LectureService(
     }
 
     @Transactional
-    fun save(lectureDateTime: LocalDateTime, capacity: Int, enrollmentPeriodStart: LocalDateTime, enrollmentPeriodEnd: LocalDateTime?): LectureEntity {
+    fun save(capacity: Int): LectureEntity {
         val lectureEntity = LectureEntity(
-            lectureDateTime = lectureDateTime,
-            capacity = capacity,
-            enrollmentPeriodStart = enrollmentPeriodStart,
-            enrollmentPeriodEnd = enrollmentPeriodEnd
+            capacity = capacity
         )
 
         return lectureRepository.save(lectureEntity)

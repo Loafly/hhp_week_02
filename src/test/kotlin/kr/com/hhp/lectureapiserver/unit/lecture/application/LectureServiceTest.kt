@@ -93,13 +93,10 @@ class LectureServiceTest {
             //given
             val userId = 1L
             val lectureId = 1L
+            val capacity = 30
             val isSuccessful = true
             given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(
-                    LectureEntity(
-                        lectureId, LocalDateTime.now(), 30, LocalDateTime.now(), null
-                    )
-                )
+                .willReturn(LectureEntity(lectureId, capacity))
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
 
@@ -116,14 +113,11 @@ class LectureServiceTest {
             //given
             val userId = 1L
             val lectureId = 1L
+            val capacity = 0
             val isSuccessful = false
 
             given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(
-                    LectureEntity(
-                        lectureId, LocalDateTime.now(), 0, LocalDateTime.now(), null
-                    )
-                )
+                .willReturn(LectureEntity(lectureId, capacity))
 
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
@@ -139,61 +133,6 @@ class LectureServiceTest {
             assertEquals("정원을 초과하였습니다.", exception.message)
         }
 
-        @Test
-        fun `실패 (특강 신청 가능 기간보다 이전인 경우)`() {
-            //given
-            val userId = 1L
-            val lectureId = 1L
-            val isSuccessful = false
-
-            given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(
-                    LectureEntity(
-                        lectureId, LocalDateTime.now(), 30, LocalDateTime.now().plusDays(1L), null
-                    )
-                )
-
-            given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
-                .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
-
-            //when
-            val exception = assertThrows<EarlyApplicationException> {
-                lectureService.apply(userId, lectureId)
-            }
-
-            //then
-            then(lectureRepository).should().findByLectureId(lectureId)
-            then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
-            assertEquals("특강 신청 기간이 아닙니다.", exception.message)
-        }
-
-        @Test
-        fun `실패 (특강 신청 가능 기간보다 이후인 경우)`() {
-            //given
-            val userId = 1L
-            val lectureId = 1L
-            val isSuccessful = false
-
-            given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(
-                    LectureEntity(
-                        lectureId, LocalDateTime.now(), 30, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1)
-                    )
-                )
-
-            given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
-                .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
-
-            //when
-            val exception = assertThrows<LateApplicationException> {
-                lectureService.apply(userId, lectureId)
-            }
-
-            //then
-            then(lectureRepository).should().findByLectureId(lectureId)
-            then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
-            assertEquals("특강 신청 기간이 아닙니다.", exception.message)
-        }
 
         @Test
         fun `실패 (동일한 특강 신청 완료가 되어있는 경우)`() {
@@ -230,12 +169,9 @@ class LectureServiceTest {
         fun `성공 (특강이 있는 경우)`() {
             //given
             val lectureId = 1L
+            val capacity = 30
             given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(
-                    LectureEntity(
-                        lectureId, LocalDateTime.now(), 30, LocalDateTime.now(), null
-                    )
-                )
+                .willReturn(LectureEntity(lectureId, capacity))
 
             // when
             val lecture = lectureService.getByLectureId(lectureId)
@@ -269,24 +205,18 @@ class LectureServiceTest {
         fun `성공 (모든 필드가 있는 특강 생성)`() {
             //given
             val lectureId = 1L
-            val lectureDateTime = LocalDateTime.now()
             val capacity = 30
-            val enrollmentPeriodStart = LocalDateTime.now()
-            val enrollmentPeriodEnd = LocalDateTime.now()
 
             val expectedLectureEntity = LectureEntity(
                 lectureId = lectureId,
-                lectureDateTime = lectureDateTime,
                 capacity = capacity,
-                enrollmentPeriodStart = enrollmentPeriodStart,
-                enrollmentPeriodEnd = enrollmentPeriodEnd
             )
 
             given(lectureRepository.save(any()))
                 .willReturn(expectedLectureEntity)
 
             // when
-            val savedLecture = lectureService.save(lectureDateTime, capacity, enrollmentPeriodStart, enrollmentPeriodEnd)
+            val savedLecture = lectureService.save(capacity)
 
             //then
             then(lectureRepository).should().save(any())

@@ -60,10 +60,11 @@ class LectureControllerTest {
             // given
             val userId = 1L;
             val lectureId = 1L;
+            val capacity = 30
 
             val requestBody = objectMapper.writeValueAsString(mapOf("userId" to userId, "lectureId" to lectureId))
 
-            lectureService.save(LocalDateTime.now(), 30, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1))
+            lectureService.save(capacity)
 
             // when then
             mockMvc.perform(
