@@ -23,7 +23,7 @@ class LectureController(private val lectureService: LectureService) {
         @RequestParam lectureId: Long,
     ): LectureDto.LectureEnrolledResponse {
 
-        val lectureEnrolled = lectureService.isLectureEnrolled(userId, lectureId)
+        val lectureEnrolled = lectureService.isLectureEnrolled(userId = userId, lectureId = lectureId)
 
         return LectureDto.LectureEnrolledResponse(
             lectureId = lectureId,

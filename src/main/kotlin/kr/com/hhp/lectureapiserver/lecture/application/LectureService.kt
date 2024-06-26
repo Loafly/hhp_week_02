@@ -18,14 +18,14 @@ class LectureService(
     private val lectureRepository: LectureRepository,
     private val lectureEnrollmentHistoryService: LectureEnrollmentHistoryService,
     private val userService: UserService
-) {
+): LectureUseCase {
 
-    fun isLectureEnrolled(userId: Long, lectureId: Long): Boolean {
+    override fun isLectureEnrolled(userId: Long, lectureId: Long): Boolean {
         val lectureUser = lectureUserService.getNullAbleLectureUser(userId = userId, lectureId = lectureId)
         return lectureUser != null;
     }
 
-    fun apply(userId: Long, lectureId: Long) {
+    override fun apply(userId: Long, lectureId: Long) {
         userService.getOrInsertById(userId)
 
         kotlin.runCatching {
@@ -72,7 +72,7 @@ class LectureService(
     }
 
     @Transactional(readOnly = true)
-    fun getAllByOrderByLectureIdDesc(pageable: Pageable): Page<LectureEntity> {
+    override fun getAllByOrderByLectureIdDesc(pageable: Pageable): Page<LectureEntity> {
         return lectureRepository.findAllByOrderByLectureIdDesc(pageable)
     }
 
