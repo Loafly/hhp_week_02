@@ -27,10 +27,7 @@
 erDiagram
     LECTURE {
 integer lecture_id PK "increment"
-datetime lecture_date_time "not null, note : 특강 일시"
 integer capacity "not null, default = 5, note : 정원"
-datetime enrollment_period_start "not null, note : 특강신청 시작일"
-datetime enrollment_period_end "null, note : 특강신청 종료일 (null인 경우 제한 없음)"
 }
 
 LECTUREENROLLMENTHISTORY {
