@@ -1,6 +1,7 @@
 package kr.com.hhp.lectureapiserver.e2e.lecture.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import kr.com.hhp.lectureapiserver.lecture.application.LectureService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.LocalDateTime
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -23,6 +25,9 @@ class LectureControllerTest {
 
     @Autowired
     private lateinit var objectMapper: ObjectMapper
+
+    @Autowired
+    private lateinit var lectureService: LectureService
 
     @Nested
     @DisplayName("특강 신청 여부 조회 API")
@@ -57,6 +62,8 @@ class LectureControllerTest {
             val lectureId = 1L;
 
             val requestBody = objectMapper.writeValueAsString(mapOf("userId" to userId, "lectureId" to lectureId))
+
+            lectureService.save(LocalDateTime.now(), 30, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1))
 
             // when then
             mockMvc.perform(
