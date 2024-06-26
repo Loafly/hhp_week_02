@@ -32,15 +32,6 @@ class LectureController(private val lectureService: LectureService) {
         )
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: LectureDto.PostRequest): LectureDto {
-        val savedLecture = lectureService.save(capacity = request.capacity)
-
-        return LectureDto.of(savedLecture)
-    }
-
-
     @PostMapping("/apply")
     @ResponseStatus(HttpStatus.CREATED)
     fun applyLecture(@RequestBody request: LectureDto.ApplyLectureRequest): LectureDto.ApplyLectureResponse {

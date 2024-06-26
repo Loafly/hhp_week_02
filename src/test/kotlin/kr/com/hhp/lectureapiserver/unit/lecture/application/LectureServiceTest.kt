@@ -5,13 +5,13 @@ import kr.com.hhp.lectureapiserver.lecture.application.LectureService
 import kr.com.hhp.lectureapiserver.lecture.application.LectureUserService
 import kr.com.hhp.lectureapiserver.lecture.application.exception.CapacityExceededException
 import kr.com.hhp.lectureapiserver.lecture.application.exception.DuplicateApplicationException
-import kr.com.hhp.lectureapiserver.lecture.application.exception.EarlyApplicationException
-import kr.com.hhp.lectureapiserver.lecture.application.exception.LateApplicationException
-import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureNotFoundException
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEnrollmentHistoryEntity
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEntity
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureUserEntity
 import kr.com.hhp.lectureapiserver.lecture.domain.LectureRepository
+import kr.com.hhp.lectureapiserver.user.application.UserService
+import kr.com.hhp.lectureapiserver.user.domain.UserRepository
+import kr.com.hhp.lectureapiserver.user.infra.UserEntity
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -25,7 +25,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
-import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 class LectureServiceTest {
@@ -35,6 +34,9 @@ class LectureServiceTest {
 
     @Mock
     private lateinit var lectureRepository: LectureRepository
+
+    @Mock
+    private lateinit var userService: UserService
 
     @Mock
     private lateinit var lectureEnrollmentHistoryService: LectureEnrollmentHistoryService
@@ -96,9 +98,11 @@ class LectureServiceTest {
             val capacity = 30
             val isSuccessful = true
             given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(LectureEntity(lectureId, capacity))
+                .willReturn(LectureEntity(lectureId = lectureId, capacity = capacity))
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
+            given(userService.getOrInsertById(userId))
+                .willReturn(UserEntity(userId))
 
             //when
             lectureService.apply(userId, lectureId)
@@ -106,6 +110,7 @@ class LectureServiceTest {
             //then
             then(lectureRepository).should().findByLectureId(lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
+            then(userService).should().getOrInsertById(userId)
         }
 
         @Test
@@ -122,6 +127,9 @@ class LectureServiceTest {
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
 
+            given(userService.getOrInsertById(userId))
+                .willReturn(UserEntity(userId))
+
             //when
             val exception = assertThrows<CapacityExceededException> {
                 lectureService.apply(userId, lectureId)
@@ -130,6 +138,7 @@ class LectureServiceTest {
             //then
             then(lectureRepository).should().findByLectureId(lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
+            then(userService).should().getOrInsertById(userId)
             assertEquals("정원을 초과하였습니다.", exception.message)
         }
 
@@ -141,11 +150,14 @@ class LectureServiceTest {
             val lectureId = 1L
             val isSuccessful = false
 
-            given(lectureUserService.getNullAbleLectureUser(userId, lectureId))
+            given(lectureUserService.getNullAbleLectureUser(userId = userId, lectureId = lectureId))
                 .willReturn(LectureUserEntity(lectureId = lectureId, userId = userId))
 
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
+
+            given(userService.getOrInsertById(userId))
+                .willReturn(UserEntity(userId))
 
             //when
             val exception = assertThrows<DuplicateApplicationException> {
@@ -153,8 +165,9 @@ class LectureServiceTest {
             }
 
             //then
-            then(lectureUserService).should().getNullAbleLectureUser(userId, lectureId)
+            then(lectureUserService).should().getNullAbleLectureUser(userId = userId, lectureId =  lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
+            then(userService).should().getOrInsertById(userId)
             assertEquals("동일한 특강에 신청완료된 내역이 있습니다. userId : $userId, lectureId : $lectureId", exception.message)
 
         }
@@ -174,54 +187,11 @@ class LectureServiceTest {
                 .willReturn(LectureEntity(lectureId, capacity))
 
             // when
-            val lecture = lectureService.getByLectureId(lectureId)
+            val lecture = lectureService.getOrInsertByLectureId(lectureId)
 
             then(lectureRepository).should().findByLectureId(lectureId)
             assertNotNull(lecture)
             assertEquals(lectureId, lecture.lectureId)
-        }
-
-        @Test
-        fun `실패 (특강이 없는 경우)`() {
-            //given
-            val lectureId = 1L
-            given(lectureRepository.findByLectureId(lectureId))
-                .willReturn(null)
-
-            // when
-            val exception = assertThrows<LectureNotFoundException> {
-                lectureService.getByLectureId(lectureId)
-            }
-
-            then(lectureRepository).should().findByLectureId(lectureId)
-            assertEquals("lecture가 존재하지 않습니다. lectureId : $lectureId", exception.message)
-        }
-    }
-
-    @Nested
-    @DisplayName("특강 생성")
-    inner class SaveTest {
-        @Test
-        fun `성공 (모든 필드가 있는 특강 생성)`() {
-            //given
-            val lectureId = 1L
-            val capacity = 30
-
-            val expectedLectureEntity = LectureEntity(
-                lectureId = lectureId,
-                capacity = capacity,
-            )
-
-            given(lectureRepository.save(any()))
-                .willReturn(expectedLectureEntity)
-
-            // when
-            val savedLecture = lectureService.save(capacity)
-
-            //then
-            then(lectureRepository).should().save(any())
-            assertNotNull(savedLecture)
-            assertEquals(expectedLectureEntity, savedLecture)
         }
     }
 }

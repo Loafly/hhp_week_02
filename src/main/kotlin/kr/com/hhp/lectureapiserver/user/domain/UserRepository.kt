@@ -5,5 +5,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface UserRepository {
+    fun save(userId: Long): UserEntity
     fun findByUserId(userId: Long): UserEntity?
 }

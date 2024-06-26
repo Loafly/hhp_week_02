@@ -12,7 +12,6 @@ import jakarta.persistence.Table
 class UserEntity (
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     var userId: Long? = null
 )

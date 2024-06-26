@@ -4,7 +4,7 @@ spring:
       lecture-api-server
 
   datasource:
-    url: jdbc:h2:mem:lecture
+    url: jdbc:h2:mem:lecture;NON_KEYWORDS=USER
     driver-class-name: org.h2.Driver
     username: sa
     password:

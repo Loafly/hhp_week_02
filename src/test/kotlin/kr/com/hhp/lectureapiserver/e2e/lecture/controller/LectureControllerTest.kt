@@ -60,11 +60,8 @@ class LectureControllerTest {
             // given
             val userId = 1L;
             val lectureId = 1L;
-            val capacity = 30
 
             val requestBody = objectMapper.writeValueAsString(mapOf("userId" to userId, "lectureId" to lectureId))
-
-            lectureService.save(capacity)
 
             // when then
             mockMvc.perform(
@@ -77,4 +74,6 @@ class LectureControllerTest {
                 .andExpect(jsonPath("$.lectureId").value(lectureId))
         }
     }
+
+
 }
