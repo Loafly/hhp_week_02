@@ -1,4 +1,4 @@
-package kr.com.hhp.lectureapiserver.lecture.exception
+package kr.com.hhp.lectureapiserver.lecture.application.exception
 
 class EarlyApplicationException(message : String) : RuntimeException(message) {
 }

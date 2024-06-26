@@ -3,11 +3,11 @@ package kr.com.hhp.lectureapiserver.unit.lecture.application
 import kr.com.hhp.lectureapiserver.lecture.application.LectureEnrollmentHistoryService
 import kr.com.hhp.lectureapiserver.lecture.application.LectureService
 import kr.com.hhp.lectureapiserver.lecture.application.LectureUserService
-import kr.com.hhp.lectureapiserver.lecture.exception.CapacityExceededException
-import kr.com.hhp.lectureapiserver.lecture.exception.DuplicateApplicationException
-import kr.com.hhp.lectureapiserver.lecture.exception.EarlyApplicationException
-import kr.com.hhp.lectureapiserver.lecture.exception.LateApplicationException
-import kr.com.hhp.lectureapiserver.lecture.exception.LectureNotFoundException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.CapacityExceededException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.DuplicateApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.EarlyApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.LateApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureNotFoundException
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEnrollmentHistoryEntity
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEntity
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureUserEntity

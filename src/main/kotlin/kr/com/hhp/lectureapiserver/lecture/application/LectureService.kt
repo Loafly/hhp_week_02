@@ -1,11 +1,11 @@
 package kr.com.hhp.lectureapiserver.lecture.application
 
 import kr.com.hhp.lectureapiserver.lecture.domain.LectureRepository
-import kr.com.hhp.lectureapiserver.lecture.exception.CapacityExceededException
-import kr.com.hhp.lectureapiserver.lecture.exception.DuplicateApplicationException
-import kr.com.hhp.lectureapiserver.lecture.exception.EarlyApplicationException
-import kr.com.hhp.lectureapiserver.lecture.exception.LateApplicationException
-import kr.com.hhp.lectureapiserver.lecture.exception.LectureNotFoundException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.CapacityExceededException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.DuplicateApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.EarlyApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.LateApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureNotFoundException
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
