@@ -3,9 +3,11 @@ package kr.com.hhp.lectureapiserver.lecture.application
 import kr.com.hhp.lectureapiserver.lecture.domain.LectureRepository
 import kr.com.hhp.lectureapiserver.lecture.application.exception.CapacityExceededException
 import kr.com.hhp.lectureapiserver.lecture.application.exception.DuplicateApplicationException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureDuplicateException
+import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureNotFoundException
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEntity
 import kr.com.hhp.lectureapiserver.user.application.UserService
-import kr.com.hhp.lectureapiserver.user.domain.UserRepository
+import kr.com.hhp.lectureapiserver.user.application.exception.UserDuplicateException
 import kr.com.hhp.lectureapiserver.user.infra.UserEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -27,8 +29,6 @@ class LectureService(
 
     @Transactional
     override fun apply(userId: Long, lectureId: Long) {
-        userService.getOrInsertById(userId)
-
         kotlin.runCatching {
             verifyApplyPreconditions(userId = userId, lectureId = lectureId)
         }.onSuccess {
@@ -50,13 +50,16 @@ class LectureService(
     }
 
     private fun verifyApplyPreconditions(userId: Long, lectureId: Long) {
+        userService.getByUserId(userId)
+        val lecture = getByLectureId(lectureId)
+
         val lectureUser = lectureUserService.getNullAbleLectureUser(userId = userId, lectureId = lectureId)
 
         if (lectureUser != null) {
             throw DuplicateApplicationException("동일한 특강에 신청완료된 내역이 있습니다. userId : $userId, lectureId : $lectureId")
         }
 
-        val lecture = getOrInsertByLectureId(lectureId)
+
         val currentStudentCount = lectureUserService.countAllByLectureId(lectureId)
 
         // 정원 초과
@@ -65,10 +68,10 @@ class LectureService(
         }
     }
 
-    @Transactional
-    fun getOrInsertByLectureId(lectureId: Long): LectureEntity {
+    @Transactional(readOnly = true)
+    fun getByLectureId(lectureId: Long): LectureEntity {
         return lectureRepository.findByLectureId(lectureId)
-            ?: lectureRepository.save(LectureEntity(lectureId = lectureId))
+            ?: throw LectureNotFoundException("Lecture를 찾을 수 없습니다. lectureId : $lectureId")
     }
 
     @Transactional(readOnly = true)
@@ -76,4 +79,14 @@ class LectureService(
         return lectureRepository.findAllByOrderByLectureIdDesc(pageable)
     }
 
+    @Transactional
+    fun save(lectureId: Long): LectureEntity {
+        kotlin.runCatching {
+            getByLectureId(lectureId)
+        }.onSuccess {
+            throw LectureDuplicateException("동일한Id를 가진 Lecture가 존재합니다. lectureId : $lectureId")
+        }
+
+        return lectureRepository.save(LectureEntity(lectureId))
+    }
 }
