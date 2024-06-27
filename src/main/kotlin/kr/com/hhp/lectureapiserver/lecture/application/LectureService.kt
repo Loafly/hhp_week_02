@@ -7,8 +7,6 @@ import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureDuplicat
 import kr.com.hhp.lectureapiserver.lecture.application.exception.LectureNotFoundException
 import kr.com.hhp.lectureapiserver.lecture.infra.entity.LectureEntity
 import kr.com.hhp.lectureapiserver.user.application.UserService
-import kr.com.hhp.lectureapiserver.user.application.exception.UserDuplicateException
-import kr.com.hhp.lectureapiserver.user.infra.UserEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -50,8 +48,8 @@ class LectureService(
     }
 
     private fun verifyApplyPreconditions(userId: Long, lectureId: Long) {
+        val lecture = getByLectureIdWithXLock(lectureId)
         userService.getByUserId(userId)
-        val lecture = getByLectureId(lectureId)
 
         val lectureUser = lectureUserService.getNullAbleLectureUser(userId = userId, lectureId = lectureId)
 
@@ -71,6 +69,12 @@ class LectureService(
     @Transactional(readOnly = true)
     fun getByLectureId(lectureId: Long): LectureEntity {
         return lectureRepository.findByLectureId(lectureId)
+            ?: throw LectureNotFoundException("Lecture를 찾을 수 없습니다. lectureId : $lectureId")
+    }
+
+    @Transactional(readOnly = true)
+    fun getByLectureIdWithXLock(lectureId: Long): LectureEntity {
+        return lectureRepository.findByLectureIdWithXLock(lectureId)
             ?: throw LectureNotFoundException("Lecture를 찾을 수 없습니다. lectureId : $lectureId")
     }
 

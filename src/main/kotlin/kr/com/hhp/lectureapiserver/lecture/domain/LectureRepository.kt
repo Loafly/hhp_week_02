@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface LectureRepository {
     fun findByLectureId(lectureId: Long) : LectureEntity?
+    fun findByLectureIdWithXLock(lectureId: Long) : LectureEntity?
     fun findAllByOrderByLectureIdDesc(pageable: Pageable) : Page<LectureEntity>
     fun save(lectureEntity: LectureEntity): LectureEntity
 }
