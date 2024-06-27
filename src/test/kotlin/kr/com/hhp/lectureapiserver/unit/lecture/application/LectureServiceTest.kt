@@ -100,7 +100,7 @@ class LectureServiceTest {
             val capacity = 30
             val isSuccessful = true
 
-            given(lectureRepository.findByLectureId(lectureId))
+            given(lectureRepository.findByLectureIdWithXLock(lectureId))
                 .willReturn(LectureEntity(lectureId = lectureId, capacity = capacity))
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
@@ -110,7 +110,7 @@ class LectureServiceTest {
             lectureService.apply(userId, lectureId)
 
             //then
-            then(lectureRepository).should().findByLectureId(lectureId)
+            then(lectureRepository).should().findByLectureIdWithXLock(lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
             then(userService).should().getByUserId(userId)
         }
@@ -123,7 +123,7 @@ class LectureServiceTest {
             val capacity = 0
             val isSuccessful = false
 
-            given(lectureRepository.findByLectureId(lectureId))
+            given(lectureRepository.findByLectureIdWithXLock(lectureId))
                 .willReturn(LectureEntity(lectureId = lectureId, capacity = capacity))
 
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
@@ -137,7 +137,7 @@ class LectureServiceTest {
             }
 
             //then
-            then(lectureRepository).should().findByLectureId(lectureId)
+            then(lectureRepository).should().findByLectureIdWithXLock(lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
             then(userService).should().getByUserId(userId)
             assertEquals("정원을 초과하였습니다.", exception.message)
@@ -160,7 +160,7 @@ class LectureServiceTest {
 
             given(userService.getByUserId(userId)).willReturn(UserEntity(userId))
 
-            given(lectureRepository.findByLectureId(lectureId))
+            given(lectureRepository.findByLectureIdWithXLock(lectureId))
                 .willReturn(LectureEntity(lectureId = lectureId, capacity = capacity))
 
             //when
@@ -172,7 +172,7 @@ class LectureServiceTest {
             then(lectureUserService).should().getNullAbleLectureUser(userId = userId, lectureId =  lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
             then(userService).should().getByUserId(userId)
-            then(lectureRepository).should().findByLectureId(lectureId)
+            then(lectureRepository).should().findByLectureIdWithXLock(lectureId)
             assertEquals("동일한 특강에 신청완료된 내역이 있습니다. userId : $userId, lectureId : $lectureId", exception.message)
         }
 
@@ -181,9 +181,12 @@ class LectureServiceTest {
             //given
             val userId = 1L
             val lectureId = 1L
+            val capacity = 30
             val isSuccessful = false
             val expectedErrorMessage = "User를 찾을 수 없습니다. userId : $userId"
 
+            given(lectureRepository.findByLectureIdWithXLock(lectureId))
+                .willReturn(LectureEntity(lectureId = lectureId, capacity = capacity))
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
 
@@ -195,6 +198,7 @@ class LectureServiceTest {
             }
 
             //then
+            then(lectureRepository).should().findByLectureIdWithXLock(lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
             then(userService).should().getByUserId(userId)
             assertEquals(expectedErrorMessage, exception.message)
@@ -208,12 +212,10 @@ class LectureServiceTest {
             val isSuccessful = false
             val expectedErrorMessage = "Lecture를 찾을 수 없습니다. lectureId : $lectureId"
 
-            given(lectureRepository.findByLectureId(lectureId)).willReturn(null)
+            given(lectureRepository.findByLectureIdWithXLock(lectureId)).willReturn(null)
 
             given(lectureEnrollmentHistoryService.save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
                 .willReturn(LectureEnrollmentHistoryEntity(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful))
-
-            given(userService.getByUserId(userId)).willReturn(UserEntity(userId))
 
             //when
             val exception = assertThrows<LectureNotFoundException> {
@@ -221,9 +223,8 @@ class LectureServiceTest {
             }
 
             //then
-            then(lectureRepository).should().findByLectureId(lectureId)
+            then(lectureRepository).should().findByLectureIdWithXLock(lectureId)
             then(lectureEnrollmentHistoryService).should().save(lectureId = lectureId, userId = userId, isSuccessful = isSuccessful)
-            then(userService).should().getByUserId(userId)
             assertEquals(expectedErrorMessage, exception.message)
         }
 
@@ -281,6 +282,7 @@ class LectureServiceTest {
             val user = lectureService.save(lectureId)
 
             //then
+            then(lectureRepository.findByLectureId(lectureId))
             then(lectureRepository).should().save(any())
             assertEquals(expectedLecture, user)
         }
