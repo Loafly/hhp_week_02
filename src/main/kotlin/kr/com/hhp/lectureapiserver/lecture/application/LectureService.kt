@@ -25,6 +25,7 @@ class LectureService(
         return lectureUser != null;
     }
 
+    @Transactional
     override fun apply(userId: Long, lectureId: Long) {
         userService.getOrInsertById(userId)
 
@@ -46,7 +47,6 @@ class LectureService(
 
             throw exception
         }
-
     }
 
     private fun verifyApplyPreconditions(userId: Long, lectureId: Long) {
