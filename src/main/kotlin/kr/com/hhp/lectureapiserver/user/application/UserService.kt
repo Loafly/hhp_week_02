@@ -11,7 +11,7 @@ class UserService(private val userRepository: UserRepository) {
     @Transactional(readOnly = true)
     fun getOrInsertById(userId: Long): UserEntity {
         return userRepository.findByUserId(userId = userId)
-            ?: UserEntity(userId = userId)
+            ?: userRepository.save(UserEntity(userId = userId))
     }
 
 }
