@@ -1,0 +1,27 @@
+spring:
+  application:
+    name:
+      lecture-api-server
+
+  datasource:
+    url: jdbc:h2:mem:lecture;NON_KEYWORDS=USER;MODE=MYSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      maximum-pool-size: 100  # 최대 풀 크기 (기본값 10)
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+server:
+  tomcat:
+    threads:
+      max: 200 # 스레드 최대 개수 (기본값 200)
+      min-spare: 10 #활성화 상태로 유지할 최소 쓰레드 개수 (기본값 10)
